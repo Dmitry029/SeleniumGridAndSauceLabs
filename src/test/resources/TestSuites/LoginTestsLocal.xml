@@ -1,6 +1,7 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
 
 <suite name="LoginTestsSuite">
+	<parameter name="environment" value="local" />
 
 	<test name="PositiveTests-Chrome">
 		<parameter name="browser" value="chrome" />

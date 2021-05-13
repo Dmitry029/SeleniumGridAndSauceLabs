@@ -2,3 +2,14 @@
 /.classpath
 /.project
 /test-output/
+/.idea
+*.iml
+target/
+test-output/
+.classpath
+.project
+.settings
+/bin/
+bin/
+*.log
+build/
