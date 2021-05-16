@@ -6,6 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
@@ -18,6 +19,7 @@ import java.util.Properties;
 
 import static com.practicetestautomation.base.BrowserDriverFactory.createDriver;
 
+@Listeners({SauceLabsTestListener.class})
 public class BaseTest {
 
     protected WebDriver driver;
@@ -32,7 +34,7 @@ public class BaseTest {
             ITestContext ctx) {
         log = LogManager.getLogger(ctx.getCurrentXmlTest().getSuite().getName());
         setProperties();
-
+        ctx.setAttribute("sauce", false);
         switch (environment) {
             case "local":
                 driver = createDriver(browser, log);
@@ -41,10 +43,18 @@ public class BaseTest {
                 driver = new GridFactory(browser, platform, log).createDriver();
                 break;
             case "sauce":
-                driver = new SauceLabsFactory(browser, platform, log).createDriver();
+                ctx.setAttribute("sauce", true);
+                String sauceTestName = ctx.getName()
+                        + " | " + method.getName()
+                        + " | " + browser
+                        + " | " + platform;
+                SauceLabsFactory factory = new SauceLabsFactory(browser, platform, log, sauceTestName);
+                driver = factory.createDriver();
+                ctx.setAttribute("sessionId", factory.getSessionId());
                 break;
             default:
                 driver = createDriver(browser, log);
+                break;
         }
 
         driver.manage().window().maximize();
@@ -52,9 +62,9 @@ public class BaseTest {
     }
 
     private void setProperties() {
-        Properties prop = System.getProperties();
+        Properties props = System.getProperties();
         try {
-            prop.load(new FileInputStream(new File("src/main/resources/property")));
+            props.load(new FileInputStream(new File("src/main/resources/test.properties")));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(-1);

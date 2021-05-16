@@ -17,21 +17,24 @@ public class SauceLabsFactory implements SauceOnDemandAuthenticationProvider {
     private ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     private String browser;
     private String platform;
+    private String sauceTestName;
     private Logger log;
+    private ThreadLocal<String> sessionId = new ThreadLocal<>();
 
     private static final SauceOnDemandAuthentication AUTENTICATION =
             new SauceOnDemandAuthentication(
                     System.getProperty("sauce.username"),
                     System.getProperty("sauce.accesskey"));
 
-    public SauceLabsFactory(String browser, String platform, Logger log) {
+    public SauceLabsFactory(String browser, String platform, Logger log, String sauceTestName) {
         this.browser = browser.toLowerCase();
         this.platform = platform;
+        this.sauceTestName = sauceTestName;
         this.log = log;
     }
 
     public WebDriver createDriver() {
-        log.info("Creating SaiceLabs instance for: " + browser + " on " + platform);
+        log.info("Creating SauceLabs instance for: " + browser + " on " + platform);
         DesiredCapabilities capabilities = new DesiredCapabilities();
         capabilities.setCapability("browserName", browser);
         capabilities.setCapability("browserVersion", "latest");
@@ -42,8 +45,10 @@ public class SauceLabsFactory implements SauceOnDemandAuthenticationProvider {
         if (platform.contains("Windows")) {
             sauceOptions.setCapability("screenResolution", "1920x1080");
         } else {
-            sauceOptions.setCapability("screenResolution", "1920x1440");
+            //sauceOptions.setCapability("screenResolution", "1920x1440");
         }
+        sauceOptions.setCapability("name", sauceTestName);
+
         capabilities.setCapability("sauce:options", sauceOptions);
 
         URL url = null;
@@ -56,6 +61,7 @@ public class SauceLabsFactory implements SauceOnDemandAuthenticationProvider {
         }
 
         driver.set(new RemoteWebDriver(url, capabilities));
+        sessionId.set(((RemoteWebDriver) driver.get()).getSessionId().toString());
 
         java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.SEVERE);
         return driver.get();
@@ -64,5 +70,9 @@ public class SauceLabsFactory implements SauceOnDemandAuthenticationProvider {
     @Override
     public SauceOnDemandAuthentication getAuthentication() {
         return AUTENTICATION;
+    }
+
+    public String getSessionId() {
+        return sessionId.get();
     }
 }

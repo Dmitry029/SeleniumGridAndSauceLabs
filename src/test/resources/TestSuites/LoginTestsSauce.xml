@@ -3,7 +3,7 @@
 <suite name="LoginTestsSuite">
 	<parameter name="environment" value="sauce" />
 
-	<test name="PositiveTests-Chrome">
+	<test name="PositiveTests">
 		<parameter name="browser" value="chrome" />
 		<parameter name="platform" value="Windows 10" />
 		<classes>
